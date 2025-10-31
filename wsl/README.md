@@ -23,7 +23,7 @@ This script installs essential productivity tools, sets up Zsh with Powerlevel10
 To run the setup, clone this repository or execute the script directly using `curl`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rasouza/dotfiles/wsl/setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/rasouzadev/dotfiles/refs/heads/main/wsl/setup.sh)
 ```
 
 ## Post-Installation
