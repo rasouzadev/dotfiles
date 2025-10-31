@@ -1,29 +1,35 @@
 # WSL Dev Environment Setup
 
-An automated setup script designed to quickly configure a robust and modern development environment within WSL2.
-This script installs essential productivity tools, sets up Zsh with Powerlevel10k, and provides interactive options to install popular programming languages and Docker.
+An automated setup script to configure a modern and efficient development environment for WSL2.  
+It installs Zsh with Powerlevel10k, productivity tools, and optional languages such as Node.js, Go, Python, and Docker.
+
+---
 
 ## Features
 
-* Modern Shell: Sets up Zsh with Oh My Zsh and the Powerlevel10k theme for a highly customized and informative prompt.
-* Essential Tools: Installs key command-line utilities like `exa`, `bat`, `fzf`, `ripgrep`, `jq`, `fd`, and `tree`.
-* Interactive Installation: Provides optional and interactive installation of Node.js (via NVM), Go, Python, and Docker.
-* Professional Workspace: Creates a structured `~/workspace` directory with standard subfolders (`backend`, `frontend`, `infra`, `tools`, `monorepo`).
-* Idempotency: Designed to be safe to run multiple times without causing issues (e.g., skips Zsh/P10k installation if already present).
+- **Modern Shell**: Installs Zsh with Oh My Zsh and Powerlevel10k theme.
+- **Essential Tools**: Includes `exa`, `bat`, `fzf`, `ripgrep`, `jq`, `fd`, and `tree`.
+- **Language Options**: Interactive installation for Node.js (via NVM), Go, Python, and Docker.
+- **Workspace Layout**: Creates a professional folder structure at `~/workspace` with subfolders (`backend`, `frontend`, `infra`, `tools`, `monorepo`).
+- **Safe Re-runs**: Idempotent — safely rerun without reinstalling components unnecessarily.
+
+---
 
 ## Prerequisites
 
-* Windows 10/11 with WSL2 enabled.
-* Distribution: Ubuntu 22.04 LTS (or newer) is recommended.
-* Active internet connection.
-* `sudo` permissions.
+- Windows 10/11 with **WSL2 enabled**
+- Recommended distribution: **Ubuntu 22.04 LTS**
+- Active internet connection
+- `sudo` privileges
+
+---
 
 ## Installation
 
-To run the setup, clone this repository or execute the script directly using `curl`:
+Run directly using `curl`:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/rasouzadev/dotfiles/refs/heads/main/wsl/setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/rasouzadev/dotfiles/main/wsl/setup.sh)
 ```
 
 ## Post-Installation

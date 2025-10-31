@@ -5,14 +5,14 @@ echo "Initializing WSL setup..."
 echo "======================================"
 
 # ================================
-# Update and install basic packages
+# Update and install base packages
 # ================================
 echo "Updating packages..."
 sudo apt update -y && sudo apt upgrade -y
 
-echo "Installing basic dependencies and productivity tools..."
+echo "Installing base dependencies..."
 sudo apt install -y build-essential curl wget git unzip zip htop net-tools \
-    ripgrep fd-find jq tree bat exa zsh fzf
+    ripgrep fd-find jq tree bat zsh fzf
 
 # ================================
 # Oh My Zsh + Powerlevel10k
@@ -29,50 +29,90 @@ if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
 fi
 
 # ================================
-# .zshrc setup
+# Rust + exa (with icon support)
 # ================================
-echo "Zsh setup..."
+if ! command -v rustc &> /dev/null; then
+    echo "Installing Rust via rustup..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+    rustup update
+fi
+
+if ! command -v exa &> /dev/null || [ "$(exa --version | grep -o 'v0.10.1')" = "" ]; then
+    echo "Installing exa with full icon support..."
+    cargo install exa
+fi
+
+# ================================
+# Zsh configuration
+# ================================
+echo "Configuring Zsh..."
 
 ZSHRC="$HOME/.zshrc"
 
 cat > "$ZSHRC" <<'EOF'
+# ===========================================
+# ZSH CONFIGURATION
+# ===========================================
+
+# Powerlevel10k Instant Prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
-plugins=(git z sudo fzf extract colored-man web-search)
+plugins=(git z sudo fzf colorize history-substring-search)
 
 source $ZSH/oh-my-zsh.sh
 
-# ===== Aliases =====
+# ========== ALIASES ==========
 alias cls='clear'
+alias ls='exa --icons --group-directories-first'
 alias ll='exa -lh --icons --group-directories-first'
-alias la='exa -lha --icons --group-directories-first'
+alias la='exa -lha --icons --group-directories-first --git'
 alias cat='batcat --style=plain --paging=never'
 alias gs='git status'
 alias gp='git pull'
 alias gc='git commit -m'
+alias gl='git log --oneline --graph --decorate'
 alias dc='docker compose'
 alias k='kubectl'
+alias findf='fdfind'
+alias grep='rg'
+alias w='cd ~/workspace'
+alias wm='cd ~/workspace/monorepo'
+alias wb='cd ~/workspace/backend'
+alias wf='cd ~/workspace/frontend'
 
-# ===== Paths =====
-export PATH="$HOME/.local/bin:$PATH"
+# ========== ENV ==========
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export EDITOR="code --wait"
 export VISUAL=$EDITOR
 
-# ===== FZF Integration =====
+# ========== TOOLS ==========
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# ========== POWERLEVEL10K ==========
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# ========== PERFORMANCE ==========
+zstyle ':completion:*' rehash true
+autoload -Uz compinit && compinit -C
 EOF
 
 chsh -s $(which zsh)
-echo "Zsh configured successfully! Restart your terminal to see the changes."
+echo "Zsh configured successfully. Restart your terminal to apply changes."
 
 # ================================
-# Workspace directory structure
+# Workspace directories
 # ================================
-echo "Creating workspace directory structure (~/workspace)..."
+echo "Creating workspace directory structure..."
 mkdir -p ~/workspace/{backend,frontend,infra,tools,monorepo}
-echo "Workspace structure created."
+echo "Workspace ready."
 
 # ================================
 # Optional installations
@@ -82,35 +122,32 @@ echo "--------------------------------------"
 echo "Optional installations"
 echo "--------------------------------------"
 
-read -p "→ Do you want to install Node.js (NVM)? [y/n]: " install_node
+read -p "Install Node.js (via NVM)? [y/n]: " install_node
 if [[ "$install_node" =~ ^[Yy]$ ]]; then
-    echo "Installing Node.js (via NVM)..."
+    echo "Installing Node.js..."
     if [ ! -d "$HOME/.nvm" ]; then
         curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     fi
     nvm install --lts
-    echo "Node.js (LTS) installed successfully!"
 fi
 
-read -p "→ Do you want to install Go? [y/n]: " install_go
+read -p "Install Go? [y/n]: " install_go
 if [[ "$install_go" =~ ^[Yy]$ ]]; then
-    echo "Installing Go (via Snap)..."
+    echo "Installing Go..."
     sudo snap install go --classic
-    echo "Go installed successfully!"
 fi
 
-read -p "→ Do you want to install Python? [y/n]: " install_python
+read -p "Install Python? [y/n]: " install_python
 if [[ "$install_python" =~ ^[Yy]$ ]]; then
-    echo "Installing Python and Pip..."
+    echo "Installing Python..."
     sudo apt install -y python3 python3-pip
-    echo "Python installed successfully!"
 fi
 
-read -p "→ Do you want to install Docker? [y/n]: " install_docker
+read -p "Install Docker? [y/n]: " install_docker
 if [[ "$install_docker" =~ ^[Yy]$ ]]; then
-    echo "Installing Docker components..."
+    echo "Installing Docker..."
     sudo apt install -y ca-certificates curl gnupg lsb-release
     sudo mkdir -p /etc/apt/keyrings
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -120,7 +157,7 @@ if [[ "$install_docker" =~ ^[Yy]$ ]]; then
     sudo apt update
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     sudo usermod -aG docker $USER
-    echo "Docker installed successfully! Please log out and back in to apply user group changes."
+    echo "Docker installed successfully. Please log out and back in to apply user group changes."
 fi
 
 # ================================
@@ -129,5 +166,5 @@ fi
 echo ""
 echo "======================================"
 echo "WSL setup completed successfully!"
-echo "Please restart your terminal."
+echo "Restart your terminal to apply all changes."
 echo "======================================"
